@@ -249,6 +249,17 @@
   /* encabezado centrado */
   .id-block{text-align:center;}
   .id-block .credentials,.contact-row{justify-content:center;}
+
+  /* siglas desplegables (SMME / SMMC) */
+  .sigla{
+    font:inherit;color:var(--teal-dark);font-weight:600;
+    background:none;border:0;padding:0;margin:0;cursor:pointer;
+    border-bottom:1px dotted var(--teal-dark);
+  }
+  .sigla:hover{color:var(--coral);border-bottom-color:var(--coral);}
+  .sigla:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:3px;}
+  .sigla[aria-expanded="true"]{border-bottom-style:solid;}
+  .sigla-full{color:var(--ink-soft);}
 </style>
 </head>
 <body>
@@ -382,6 +393,20 @@ const COURSES = {"2026": [{"name": "Estado del arte: trombosis en la actualidad.
 
 const monthMap = {enero:0,febrero:1,marzo:2,abril:3,mayo:4,junio:5,julio:6,agosto:7,septiembre:8,octubre:9,noviembre:10,diciembre:11};
 
+const SIGLAS = {
+  SMME: 'Sociedad Mexicana de Medicina de Emergencia',
+  SMMC: 'Sociedad Mexicana de Medicina Crítica'
+};
+const SIGLA_SHOW = 'Ver nombre completo', SIGLA_HIDE = 'Ocultar nombre completo';
+
+// Convierte cada SMME / SMMC en un botón que despliega su nombre completo
+function withSiglas(text){
+  return text.replace(/\b(SMME|SMMC)\b/g, function(_, s){
+    return '<button type="button" class="sigla" aria-expanded="false" title="' + SIGLA_SHOW + '">' + s + '</button>' +
+           '<span class="sigla-full" hidden> (' + SIGLAS[s] + ')</span>';
+  });
+}
+
 const container = document.getElementById('courses-container');
 const years = Object.keys(COURSES).sort((a,b)=>b-a);
 
@@ -398,11 +423,21 @@ years.forEach((year, idx) => {
   const ul = document.createElement('ul');
   COURSES[year].forEach(c => {
     const li = document.createElement('li');
-    li.innerHTML = `<span class="course-name">${c.name}</span><span class="course-month">${c.month}</span>`;
+    li.innerHTML = `<span class="course-name">${withSiglas(c.name)}</span><span class="course-month">${c.month}</span>`;
     ul.appendChild(li);
   });
   details.appendChild(ul);
   container.appendChild(details);
+});
+
+// Clic / Enter / Espacio sobre una sigla: despliega o pliega su nombre completo
+container.addEventListener('click', function(e){
+  var b = e.target.closest('.sigla');
+  if(!b) return;
+  var open = b.getAttribute('aria-expanded') === 'true';
+  b.setAttribute('aria-expanded', String(!open));
+  b.title = open ? SIGLA_SHOW : SIGLA_HIDE;
+  b.nextElementSibling.hidden = open;
 });
 </script>
 
